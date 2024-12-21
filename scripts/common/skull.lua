@@ -25,18 +25,17 @@ end
 setParentTypeRec(model, "NONE")
 model:setParentType("SKULL")
 
-model.LegLeft:setRot(90, 13, 0)
-model.LegRight:setRot(90, -13, 0)
-model.UpperBody.ArmLeft:setRot(13, 0)
-model.UpperBody.ArmRight:setRot(13, 0)
+model.LeftLeg:setRot(90, 13, 0)
+model.RightLeg:setRot(90, -13, 0)
+model.LeftArm:setRot(13, 0)
+model.RightArm:setRot(13, 0)
 
 models:addChild(model)
 
 local taskHolder = models:newPart("TKBunny$TaskHolderModels", "SKULL")
-local cam = taskHolder:newPart("camera")
 
 local function compileVec(str)
-  local x, y, z = table.unpack(string.split(str, ","))
+  local x, y, z = str:match("^[0-9.]+,[0-9.]+,[0-9.]+$")
 
   return vectors.vec3(tonumber(x), tonumber(y), tonumber(z))
 end
