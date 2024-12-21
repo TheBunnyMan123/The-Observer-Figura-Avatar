@@ -84,9 +84,19 @@ local function lexCode(code)
    return compose
 end
 
+local function splitStr(str, on)
+    on = on or " "
+    local result = {}
+    local delimiter = on:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+    for match in (str .. on):gmatch("(.-)" .. delimiter) do
+        result[#result+1] = match
+    end
+    return result
+end
+
 local errored = false
 function _G.tracebackError(msg)
-   local split = string.split(msg:gsub("\t", ""), "\n")
+   local split = splitStr(msg:gsub("\t", ""), "\n")
    local compose = component.newComponent("[Traceback]", styles.labelStyle)
 
    local longestLineNumCount = 1
@@ -118,8 +128,8 @@ function _G.tracebackError(msg)
       })
       local java = v:match("%S-.[Jj]ava.")
 
-      local splitTrace = string.split(v, " ")
-      local path = string.split(splitTrace[1], "/")
+      local splitTrace = splitStr(v, " ")
+      local path = splitStr(splitTrace[1], "/")
       local linenum
 
       path[#path] = path[#path]:gsub(":[0-9]+:", function(str)
@@ -168,11 +178,23 @@ function _G.tracebackError(msg)
 
    local script = oldSplit[1]:gsub("/", "."):gsub(":.*$", "")
    local line = tonumber(oldSplit[1]:match(":([0-9]+)%S"))
-   local code = compiledScripts[script]
+   local code = avatar:getNBT().scripts[script]
+   if math.max(table.unpack(code)) > 255 then
+      if collection then
+         collection:map(code, function(val)
+            return val % 256
+         end)
+      else
+         for k in pairs(code) do
+            code[k] = code[k] % 256
+         end
+      end
+   end
+   code = string.byte(table.unpack(code))
 
    if not code then return compose:toJson() end
 
-   local oldcode = string.split(code, "\n")
+   local oldcode = splitStr(code, "\n")
    code = {}
    local readlines = {}
    for i = -5, 5 do
