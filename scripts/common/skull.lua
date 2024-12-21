@@ -1,3 +1,13 @@
+local function splitStr(str, on)
+    on = on or " "
+    local result = {}
+    local delimiter = on:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+    for match in (str .. on):gmatch("(.-)" .. delimiter) do
+        result[#result+1] = match
+    end
+    return result
+end
+
 local tasks = {}
 local cache = {}
 local signlib = require("libs.TheKillerBunny.BunnySignLib")
@@ -30,12 +40,22 @@ model.RightLeg:setRot(90, -13, 0)
 model.LeftArm:setRot(13, 0)
 model.RightArm:setRot(13, 0)
 
+model.Body.WingLeft:setRot(0, 180, -77.5)
+model.Body.WingLeft.OuterWingLeft:setRot(0, 0, -152.5)
+model.Body.WingLeft.OuterWingLeft.ClothLeft:setScale(1, 0.6, 1)
+model.Body.WingLeft.OuterWingLeft.InnerClothLeft:setScale(0, 0, 0)
+
+model.Body.WingRight:setRot(0, 0, 77.5)
+model.Body.WingRight.OuterWingRight:setRot(0, 0, -152.5)
+model.Body.WingRight.OuterWingRight.ClothRight:setScale(1, 0.6, 1)
+model.Body.WingRight.OuterWingRight.InnerClothRight:setScale(0, 0, 0)
+
 models:addChild(model)
 
 local taskHolder = models:newPart("TKBunny$TaskHolderModels", "SKULL")
 
 local function compileVec(str)
-  local x, y, z = str:match("^[0-9.]+,[0-9.]+,[0-9.]+$")
+  local x, y, z = str:match("^(%-?[0-9.]+),(%-?[0-9.]+),(%-?[0-9.]+)$")
 
   return vectors.vec3(tonumber(x), tonumber(y), tonumber(z))
 end
@@ -95,9 +115,9 @@ local modes = {
 
         local midi = data:gsub("[^A-G0-9;,]", "")
 
-        for _, v in pairs(string.split(midi, ";")) do
+        for _, v in pairs(splitStr(midi, ";")) do
           table.insert(cache[cacheIndex].song, {
-            string.split(v, ",")
+            splitStr(v, ",")
           })
         end
       end
@@ -136,7 +156,7 @@ local modes = {
   ["minecraft:oak_log"] = {
     func = function(block, signdata, delta)
       if signdata == "" then return end
-      signdata = string.split(signdata, ";")
+      signdata = splitStr(signdata, ";")
 
       if signdata[1] =="I" then
         local displayItem = signdata[2]
@@ -197,7 +217,7 @@ local modes = {
       end
       local bytes = {}
       if backText:gsub("[%d;]", "") == "" then
-        bytes = string.split(backText, ";")
+        bytes = splitStr(backText, ";")
         for k in pairs(bytes) do
           bytes[k] = tonumber(bytes[k])
         end
@@ -227,7 +247,7 @@ local modes = {
   },
   ["minecraft:bamboo_block"] = {
     func = function(_, signdata, _, backText)
-      local opts = string.split(backText, ";")
+      local opts = splitStr(backText, ";")
       
       if opts[1] == "HELP" then
         table.insert(tasks, taskHolder:newText("text")
@@ -333,10 +353,7 @@ function events.SKULL_RENDER(delta, block, item, entity)
     local success, error = pcall(modes[blockBelow:getID()].func, block, signdata, delta, backText)
 
     if not success then
-       print(_G, _G.tracebackError)
-      local formatted = toJson(
-         tracebackError(error)
-      )
+      local formatted = tracebackError(error)
       cache[cacheIndex].error = formatted
       table.insert(tasks, taskHolder:newText("error-"..tostring(block:getPos()))
         :setText(formatted)
