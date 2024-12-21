@@ -1,0 +1,9 @@
+# Libraries (use figmanager)
+libs
+!libs/BlueMoonJune/lex.lua
+!libs/TheKillerBunny/BunnySignLib.lua
+
+# LuaLS stuff
+.luarc.json
+.vscode
+
