@@ -1,5 +1,5 @@
 # Libraries (use figmanager)
-libs
+libs/*/*
 !libs/BlueMoonJune/lex.lua
 !libs/TheKillerBunny/BunnySignLib.lua
 
