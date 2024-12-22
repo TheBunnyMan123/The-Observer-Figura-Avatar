@@ -43,7 +43,7 @@ local function toggleWings(state)
 end
 
 local jetpackOn = 0
-function pings.setFlightTime(duration)
+local function setFlightTime(duration)
    if duration == 0 or not duration then
       return
    end
@@ -51,21 +51,38 @@ function pings.setFlightTime(duration)
    jetpackOn = (duration + 1) * 10 + 5
 end
 
-keybinds:fromVanilla("key.use"):setGUI(false):setOnPress(function()
+local flightDuration = 0
+local listeningForSound = 0
+
+function events.TICK()
    if not player:isGliding() then
+      listeningForSound = 0
+      flightDuration = 0
+      jetpackOn = 0
+
       return
    end
 
-   local item = player:getHeldItem()
+   if player:isSwingingArm() then
+      local item = player:getHeldItem()
+      if item:getID() ~= "minecraft:firework_rocket" then
+         item = player:getHeldItem(true)
+      end
 
-   if item:getID() ~= "minecraft:firework_rocket" then
-      item = player:getHeldItem(true)
+      if item:getID() == "minecraft:firework_rocket" then
+         local tag = item:getTag()
+         flightDuration = tag.Fireworks.Flight or tag["minecraft:fireworks"]["flight_duration"]
+         
+         listeningForSound = 100
+      end
    end
+end
 
-   if item:getID() == "minecraft:firework_rocket" then
-      pings.setFlightTime(item:getTag().Fireworks.Flight)
+function events.ON_PLAY_SOUND(id)
+   if id == "minecraft:entity.firework_rocket.launch" and (listeningForSound > 0) then
+      setFlightTime(flightDuration)
    end
-end)
+end
 
 local steamColor = vec(1, 1, 1)
 function events.TICK()
