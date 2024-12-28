@@ -12,7 +12,7 @@ end
 return {
   guestTransform = function(p)
     for k in p.scripts:entries() do
-      if k:match("^scripts.host") or k:match("GNUI") or k:match("^tools") then
+      if k:match("^scripts.host") or k:match("GNUI") or k:match("^tools") or k:match("^tests") then
         p.scripts[k] = nil
       end
     end

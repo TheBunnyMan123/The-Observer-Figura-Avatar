@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+local Nebula = require("libs.TheKillerBunny.Nebula")
+local TextComponents = require("libs.TheKillerBunny.TextComponents")
 
 for _, v in pairs(models.models:getChildren()) do
    v:remove()
@@ -27,6 +29,40 @@ function _G.split(str, on)
         result[#result+1] = match
     end
     return result
+end
+
+for _, v in pairs(listFiles("tests", true)) do
+   for _, w in pairs(require(v)) do
+      Nebula.add(table.unpack(w))
+   end
+end
+
+local testStyles = {
+   white = TextComponents.newStyle(),
+   red = TextComponents.newStyle():setColor("red"),
+   green = TextComponents.newStyle():setColor("green")
+}
+
+local fails, successes = Nebula.run()
+if host:isHost() then
+   local compose = TextComponents.newComponent(tostring(#successes), testStyles.green)
+   compose:append(TextComponents.newComponent(" test(s) passed; ", testStyles.white))
+   compose:append(TextComponents.newComponent(tostring(#fails), testStyles.red))
+   compose:append(TextComponents.newComponent(" test(s) failed\n", testStyles.white))
+   compose:append(TextComponents.newComponent("Failed tests:\n", testStyles.white))
+
+   for _, v in pairs(fails) do
+      compose:append(TextComponents.newComponent("* ", testStyles.white))
+      compose:append(TextComponents.newComponent(v.name, testStyles.red):setHoverText(
+         parseJson(tracebackError(v.error))
+      ))
+   end
+
+   printJson(compose:toJson())
+
+   if #fails >= 1 then
+      goofy:stopAvatar(compose:toJson())
+   end
 end
 
 require("libs.TheKillerBunny.BunnyAsync").forpairs(listFiles("scripts", true), function(_, v)
