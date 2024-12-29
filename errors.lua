@@ -14,6 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+if avatar:getMaxInitCount() < 12000000 then
+   tracebackError = function(...) return ... end
+   return
+end
+
 local component = require("libs.TheKillerBunny.TextComponents")
 local lex = require("libs.BlueMoonJune.lex")
 
@@ -123,9 +128,6 @@ function _G.tracebackError(msg)
    end
 
    for _, v in pairs(split) do
-      table.insert(compose, {
-         text = "\n"
-      })
       local java = v:match("%S-.[Jj]ava.")
 
       local splitTrace = splitStr(v, " ")
@@ -179,7 +181,7 @@ function _G.tracebackError(msg)
    local script = oldSplit[1]:gsub("/", "."):gsub(":.*$", "")
    local line = tonumber(oldSplit[1]:match(":([0-9]+)%S"))
    local code = avatar:getNBT().scripts[script]
-   if math.max(table.unpack(code)) > 255 then
+   if code and math.max(table.unpack(code)) > 255 then
       if collection then
          collection:map(code, function(val)
             return val % 256
@@ -190,9 +192,12 @@ function _G.tracebackError(msg)
          end
       end
    end
-   code = string.byte(table.unpack(code))
 
-   if not code then return compose:toJson() end
+   if not code then
+      return compose:toJson()
+   else
+      code = string.char(table.unpack(code))
+   end
 
    local oldcode = splitStr(code, "\n")
    code = {}

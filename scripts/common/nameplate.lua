@@ -1,3 +1,7 @@
+if avatar:getMaxWorldTickCount() < 1000 then
+   return
+end
+
 BunnyPlate = require("libs.TheKillerBunny.BunnyPlate")
 if client:getDate().month == 10 then
   BunnyPlate = BunnyPlate(20, vec(225, 134, 64), vec(235, 97, 35))

@@ -65,11 +65,13 @@ if host:isHost() then
    end
 end
 
-require("libs.TheKillerBunny.BunnyAsync").forpairs(listFiles("scripts", true), function(_, v)
+for _, v in pairs(listFiles("scripts", true)) do
    require(v)
-end)
+end
 
-require("libs.TheKillerBunny.BunnyChatUtils")
+if client.compareVersions("1.21.4", client.getVersion()) > 0 then
+   require("libs.TheKillerBunny.BunnyChatUtils")
+end
 
 avatar:store("net_prompter", function()
    local vrs = world.avatarVars()["584fb77d-5c02-468b-a5ba-4d62ce8eabe2"]
